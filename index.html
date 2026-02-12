@@ -340,21 +340,143 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+                perspective: none;
+            }
+
             .book-container {
-                height: 80vh;
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                max-height: none;
+                perspective: none;
+            }
+
+            .book {
+                transform-style: flat;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .book-spine {
+                display: none;
+            }
+
+            .book-cover {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                transform: none !important;
+                animation: none !important;
+            }
+
+            .book-cover.left,
+            .book-cover.right {
+                border: 3px solid #8b4513;
+            }
+
+            .page-wrapper {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                transform: none !important;
+                transition: none;
+                cursor: default;
+                display: none;
+            }
+
+            .page-wrapper.active {
+                display: block;
+            }
+
+            .page {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                transform: none !important;
+            }
+
+            .page-front {
+                display: block;
+            }
+
+            .page-back {
+                display: none;
+            }
+
+            .flipped .page-front {
+                display: none;
+            }
+
+            .flipped .page-back {
+                display: block;
+                transform: none !important;
             }
 
             .page-content {
                 padding: 30px 20px;
+                min-height: 100vh;
             }
 
             .page-text {
-                font-size: 1rem;
+                font-size: 1.1rem;
+            }
+
+            .page-text h2 {
+                font-size: 1.8rem;
+            }
+
+            .page-text h3 {
+                font-size: 1.4rem;
+            }
+
+            .cover-page h1 {
+                font-size: 2rem;
+            }
+
+            .cover-page p {
+                font-size: 1.2rem;
+            }
+
+            .book-cover h1 {
+                font-size: 1.8rem;
+            }
+
+            .book-cover p {
+                font-size: 1.1rem;
             }
 
             .btn {
-                padding: 12px 25px;
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+
+            .controls {
+                bottom: 20px;
+                gap: 15px;
+            }
+
+            .page-indicator {
+                top: 20px;
+                padding: 8px 20px;
                 font-size: 1rem;
+            }
+
+            .page-number {
+                bottom: 20px;
+                font-size: 0.9rem;
+            }
+
+            .page-number.left {
+                left: 20px;
+            }
+
+            .page-number.right {
+                right: 20px;
             }
         }
 
@@ -871,24 +993,40 @@
             if (hasOpenedBook) return;
             hasOpenedBook = true;
             
-            book.classList.add('opening-animation');
+            const isMobile = window.innerWidth <= 768;
             
-            setTimeout(() => {
-                document.getElementById('leftCover').style.display = 'none';
+            if (isMobile) {
                 document.getElementById('rightCover').style.display = 'none';
                 createPages();
+                const pageWrappers = book.querySelectorAll('.page-wrapper');
+                pageWrappers.forEach(w => w.style.display = 'none');
                 updatePageIndicator();
                 document.getElementById('prevBtn').disabled = false;
-            }, 1500);
+            } else {
+                book.classList.add('opening-animation');
+                
+                setTimeout(() => {
+                    document.getElementById('leftCover').style.display = 'none';
+                    document.getElementById('rightCover').style.display = 'none';
+                    createPages();
+                    updatePageIndicator();
+                    document.getElementById('prevBtn').disabled = false;
+                }, 1500);
+            }
         }
 
         function createPages() {
             const existingPages = book.querySelectorAll('.page-wrapper');
             existingPages.forEach(p => p.remove());
 
+            const isMobile = window.innerWidth <= 768;
+
             pages.forEach((page, index) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'page-wrapper';
+                if (isMobile) {
+                    wrapper.className += ' active';
+                }
                 wrapper.style.zIndex = pages.length - index;
                 
                 const frontPage = document.createElement('div');
@@ -916,7 +1054,19 @@
             if (currentPage < pages.length - 1) {
                 currentPage++;
                 const pageWrappers = book.querySelectorAll('.page-wrapper');
-                pageWrappers[currentPage].classList.add('flipped');
+                
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    pageWrappers.forEach((w, i) => w.style.display = 'none');
+                    const currentWrapper = pageWrappers[currentPage];
+                    if (currentWrapper) {
+                        currentWrapper.style.display = 'block';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } else {
+                    pageWrappers[currentPage].classList.add('flipped');
+                }
+                
                 updateControls();
                 updatePageIndicator();
             }
@@ -925,8 +1075,22 @@
         function prevPage() {
             if (currentPage >= 0) {
                 const pageWrappers = book.querySelectorAll('.page-wrapper');
-                pageWrappers[currentPage].classList.remove('flipped');
-                currentPage--;
+                
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    currentPage--;
+                    pageWrappers.forEach((w, i) => w.style.display = 'none');
+                    if (currentPage >= 0) {
+                        pageWrappers[currentPage].style.display = 'block';
+                    } else {
+                        document.getElementById('leftCover').style.display = 'flex';
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    pageWrappers[currentPage].classList.remove('flipped');
+                    currentPage--;
+                }
+                
                 updateControls();
                 updatePageIndicator();
             }
