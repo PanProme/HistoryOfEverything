@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The History of Everything - A Love Story</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Garamond', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            perspective: 2000px;
+            overflow-x: hidden;
+        }
+
+        .book-container {
+            width: 90%;
+            max-width: 1400px;
+            height: 85vh;
+            max-height: 800px;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .book {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(to right, #8b4513, #654321, #8b4513);
+            transform: translateX(-50%) translateZ(-20px);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .book-cover {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #d4a574 0%, #c19a6b 100%);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 3px solid #8b4513;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            transform-style: preserve-3d;
+        }
+
+        .book-cover.left {
+            left: 0;
+            border-right: none;
+            transform-origin: right center;
+        }
+
+        .book-cover.right {
+            right: 0;
+            border-left: none;
+            transform-origin: left center;
+        }
+
+        .book-cover h1 {
+            font-size: 3rem;
+            color: #8b4513;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .book-cover p {
+            font-size: 1.5rem;
+            color: #654321;
+            font-style: italic;
+        }
+
+        .page-wrapper {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            left: 0;
+            transform-origin: right center;
+            transform-style: preserve-3d;
+            transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+            cursor: pointer;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #fffef0 0%, #fefce8 100%);
+            backface-visibility: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid #d4a574;
+            overflow: hidden;
+        }
+
+        .page-front {
+            transform: rotateY(0deg);
+        }
+
+        .page-back {
+            transform: rotateY(180deg);
+        }
+
+        .page-content {
+            padding: 60px 50px;
+            height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .page-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .page-content::-webkit-scrollbar-track {
+            background: #fefce8;
+        }
+
+        .page-content::-webkit-scrollbar-thumb {
+            background: #d4a574;
+            border-radius: 4px;
+        }
+
+        .page-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+
+        .page-image.full-page {
+            max-height: 100%;
+            height: 100%;
+            object-fit: cover;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .page-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #2c1810;
+            text-align: left;
+        }
+
+        .page-text.center {
+            text-align: center;
+        }
+
+        .page-text h2 {
+            font-size: 2.5rem;
+            color: #8b4513;
+            margin-bottom: 25px;
+            font-family: 'Georgia', serif;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .page-text h3 {
+            font-size: 1.8rem;
+            color: #654321;
+            margin: 20px 0 15px;
+            font-style: italic;
+        }
+
+        .page-text p {
+            margin-bottom: 15px;
+        }
+
+        .exclamation {
+            color: #c41e3a;
+            font-weight: bold;
+        }
+
+        .quote-box {
+            background: rgba(212, 165, 116, 0.15);
+            border-left: 4px solid #8b4513;
+            padding: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            border-radius: 5px;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 30px;
+            font-size: 1rem;
+            color: #8b4513;
+            font-style: italic;
+        }
+
+        .page-number.left {
+            left: 50px;
+        }
+
+        .page-number.right {
+            right: 50px;
+        }
+
+        .flipped {
+            transform: rotateY(-180deg);
+            pointer-events: none;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8b4513, #654321);
+            color: #fffef0;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 69, 19, 0.9);
+            color: #fffef0;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .cover-page {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(193, 154, 107, 0.1));
+            padding: 60px;
+        }
+
+        .cover-page h1 {
+            font-size: 3.5rem;
+            color: #8b4513;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-style: italic;
+        }
+
+        .cover-page p {
+            font-size: 1.6rem;
+            color: #654321;
+            line-height: 1.8;
+            max-width: 600px;
+        }
+
+        .decorative-line {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #8b4513, transparent);
+            margin: 30px auto;
+        }
+
+        @media (max-width: 1024px) {
+            .book-container {
+                height: 90vh;
+                max-height: 700px;
+            }
+
+            .page-content {
+                padding: 40px 30px;
+            }
+
+            .page-text {
+                font-size: 1.1rem;
+            }
+
+            .page-text h2 {
+                font-size: 2rem;
+            }
+
+            .book-cover h1 {
+                font-size: 2rem;
+            }
+
+            .cover-page h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .book-container {
+                height: 80vh;
+            }
+
+            .page-content {
+                padding: 30px 20px;
+            }
+
+            .page-text {
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+        }
+
+        .opening-animation .book-cover.left {
+            animation: openLeft 1.5s ease-out forwards;
+        }
+
+        .opening-animation .book-cover.right {
+            animation: openRight 1.5s ease-out forwards;
+        }
+
+        @keyframes openLeft {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(-130deg);
+            }
+        }
+
+        @keyframes openRight {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(130deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-indicator">
+        <span id="pageIndicator">Opening book...</span>
+    </div>
+
+    <div class="book-container">
+        <div class="book" id="book">
+            <div class="book-spine"></div>
+            <div class="book-cover left" id="leftCover">
+                <h1>✨ The History of Everything ✨</h1>
+                <p>A Love Story</p>
+                <p>13.8 Billion Years in the Making</p>
+            </div>
+            <div class="book-cover right" id="rightCover"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prevBtn" onclick="prevPage()" disabled>← Previous</button>
+        <button class="btn" id="nextBtn" onclick="nextPage()">Next →</button>
+    </div>
+
+    <script>
+        const pages = [
+            // PAGE 1 - Title and Big Bang
+            {
+                front: `
+                    <div class="cover-page">
+                        <h1>📖 The History of Everything 📖</h1>
+                        <div class="decorative-line"></div>
+                        <p><strong>A Love Story 13.8 Billion Years in the Making</strong></p>
+                        <div class="decorative-line"></div>
+                        <p style="margin-top: 30px; font-size: 1.2rem; font-style: italic;">
+                            The history of everything is a story of great loss and great victory,
+                            big events and small ones, good and bad.
+                        </p>
+                        <p style="margin-top: 20px; font-size: 1.3rem;">
+                            Here is that history.
+                        </p>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/dcac3d77-e568-4023-9439-5535957d7f31" class="page-image full-page" alt="Big Bang - Let there be light">
+                    </div>
+                `
+            },
+            // PAGE 2 - In the Beginning and Earth
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>In the Beginning</h2>
+                            <div class="decorative-line"></div>
+                            <p><strong>Let there be Light<span class="exclamation">!!!</span></strong></p>
+                            <p style="font-size: 1.5rem; margin: 30px 0;">13.8 Billion years ago, God formed the universe from nothing<span class="exclamation">!</span></p>
+                            <p>Not much happened after that…..</p>
+                            <p>Stars form, they blow up….. This happened for a while.</p>
+                        </div>
+                        <div class="page-number left">2</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/7615165c-4dd0-44a5-ad65-d272bd0bc5ab" class="page-image full-page" alt="Universe Timeline">
+                        <div class="page-number right">3</div>
+                    </div>
+                `
+            },
+            // PAGE 3 - Fourth Day and History
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>The Fourth Day</h2>
+                            <p>Then on the fourth day God created the sun…..</p>
+                            <p>Now things are beginning to get interesting….Earth<span class="exclamation">!!!</span></p>
+                            <p>On the sixth day, Man<span class="exclamation">!!!</span> ….. People though, we are something…..</p>
+                            <div class="decorative-line"></div>
+                            <h3>Now comes the real ups and downs<span class="exclamation">!!!!</span></h3>
+                            <p>Lots of smiting going on in this period…..</p>
+                            <p>Then…Jesus<span class="exclamation">!!!!</span> Things are looking up<span class="exclamation">!!!</span> But the Jews<span class="exclamation">!!!</span> Then a twist<span class="exclamation">!!!</span></p>
+                        </div>
+                        <div class="page-number left">4</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <p>Ok, now we are in year 33……….</p>
+                            <p style="font-size: 1.8rem; text-align: center; margin: 40px 0;"><strong>CRUSADES<span class="exclamation">!!!</span></strong></p>
+                            <p style="text-align: center; font-style: italic;">Have they invented toilets yet?????</p>
+                            <div class="decorative-line"></div>
+                            <h3>Recent History (Sort of)</h3>
+                            <p>1941…World War 2<span class="exclamation">!!!</span> Wait, 2? What was World War 1? Oh, We are in America, it really didn't matter to us….</p>
+                            <p>Then some Russians and things…..</p>
+                        </div>
+                        <div class="page-number right">5</div>
+                    </div>
+                `
+            },
+            // PAGE 4 - Stephen and Lisa Born
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/bb1c1db5-5053-4871-a9a2-8db1286ed828" class="page-image full-page" alt="Earth's Wild Ride">
+                        <div class="page-number left">6</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>The REAL History Begins</h2>
+                            <p><strong>1985…..Stephen was born<span class="exclamation">!!!!</span></strong></p>
+                            <p>Wow, that was really awesome<span class="exclamation">!!!</span></p>
+                            <p>……hmmmmm, well he can't be lonely…..</p>
+                            <p><strong>1988…..LISA<span class="exclamation">!!!!!!!!!!!</span></strong> The love<span class="exclamation">!!!!!!!</span></p>
+                        </div>
+                        <div class="page-number right">7</div>
+                    </div>
+                `
+            },
+            // PAGE 5 - OkCupid
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>And then we wait<span class="exclamation">!!!!!!</span></h2>
+                            <div class="decorative-line"></div>
+                            <p>And then…..cupid enters the scene… wait, I mean <strong>OkCupid</strong>….</p>
+                            <p>A little back and forth, and then……</p>
+                            <p style="font-size: 1.6rem; margin: 40px 0;"><strong>February 20, 2020</strong></p>
+                            <p style="font-size: 1.3rem;">otherwise known as <strong>02/20/2020</strong></p>
+                            <p>Stephen sent a message. It was THE message….</p>
+                        </div>
+                        <div class="page-number left">8</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/4f91611a-c3ca-4c09-acfc-234ba0221c24" class="page-image full-page" alt="Tale of Two Sunnys">
+                        <div class="page-number right">9</div>
+                    </div>
+                `
+            },
+            // PAGE 6 - The Message
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h3>The Message</h3>
+                            <div class="quote-box">
+                                "Hey this is Stephen! If it's easier I can chat this way with you. Let me know"
+                            </div>
+                            <p style="font-style: italic;">It was profound, and even centuries later, romantic scholars will try to decipher the subtext.</p>
+                            <h3 style="margin-top: 40px;">The Reply</h3>
+                            <div class="quote-box">
+                                "Yea sure! But I also really want the coffee pics!!"
+                            </div>
+                            <p style="text-align: center; font-size: 1.4rem; margin: 30px 0;">It was official they were off the apps<span class="exclamation">!!!!</span></p>
+                        </div>
+                        <div class="page-number left">10</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>The Drama</h2>
+                            <p>Everything was going great, but as in all great love stories, something scary happened…..</p>
+                            <p>Ghosts<span class="exclamation">!!!</span> Wait, sorry I mean <strong>ghosted</strong>…</p>
+                            <p>Then the message came in… Lisa said,</p>
+                            <div class="quote-box">
+                                "Hey I'm sorry, I'm dating someone and it's getting kinda serious."
+                            </div>
+                            <p style="text-align: center; font-size: 1.8rem; margin: 30px 0;"><strong>Devastation<span class="exclamation">!!!!!!</span></strong></p>
+                        </div>
+                        <div class="page-number right">11</div>
+                    </div>
+                `
+            },
+            // PAGE 7 - The Stoic Man and Setup
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h3>The Stoic Man</h3>
+                            <p>Stephen plays it cool…He is a stoic man…..strong but never gruff, not even on text messages…..</p>
+                            <p style="margin: 30px 0; font-style: italic;">Months go by…..</p>
+                            <p>Then a smoke signal… I mean a <strong>signal message</strong>…a woman named Lisa has bumped into Stephen…..</p>
+                            <p style="text-align: center; font-size: 1.6rem; margin: 30px 0;"><strong>And the crowd goes wild<span class="exclamation">!!!!!!!!!</span></strong></p>
+                        </div>
+                        <div class="page-number left">12</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h3>The Setup</h3>
+                            <p>They agree to meet……</p>
+                            <p>Lisa blows Stephen off<span class="exclamation">!!!</span></p>
+                            <p style="margin: 30px 0;">But then they agree to meet the next day at a motorcycle bar.</p>
+                            <p style="text-align: center; font-style: italic; font-size: 1.3rem;">The stage was set...</p>
+                        </div>
+                        <div class="page-number right">13</div>
+                    </div>
+                `
+            },
+            // PAGE 8 - Bar Meeting
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/b0057ecf-2646-4032-8599-ede378ff4e77" class="page-image full-page" alt="Three Weddings Timeline">
+                        <div class="page-number left">14</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>Contact<span class="exclamation">!!!!!</span></h2>
+                            <p>There Stephen was, trapped in boring conversation, when in walks the most beautiful girl in the world….</p>
+                            <p>Dare he hope….He sees her walk up to the bar…And ask the bartender if there was a Stephen at the bar….The bartender….turns and points directly at Stephen……</p>
+                            <p style="text-align: center; font-size: 1.8rem; margin: 40px 0;"><strong>Contact<span class="exclamation">!!!!!</span></strong></p>
+                            <p style="text-align: center; font-size: 1.4rem;"><strong>September 28th, 2020</strong></p>
+                        </div>
+                        <div class="page-number right">15</div>
+                    </div>
+                `
+            },
+            // PAGE 9 - Tale of Two Sunnys
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/5d3f961b-8f00-48ab-babf-5abb221e9812" class="page-image full-page" alt="Three Weddings Triptych">
+                        <div class="page-number left">16</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>A Tale of Two Sunnys</h2>
+                            <div class="decorative-line"></div>
+                            <p>A tale of two Sunnys…..</p>
+                            <p>a future match made in slobber<span class="exclamation">!!!!!</span></p>
+                        </div>
+                        <div class="page-number right">17</div>
+                    </div>
+                `
+            },
+            // PAGE 10 - The Question
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>The Question</h2>
+                            <p style="text-align: center; font-size: 1.5rem;"><strong>November 15th, 2020</strong></p>
+                            <p style="text-align: center; margin: 20px 0;">Another important date in history….</p>
+                            <p style="text-align: center;">A question was asked, and an answer given…..</p>
+                            <div class="decorative-line"></div>
+                            <div class="quote-box">
+                                <p><strong>Lisa:</strong> Do you want to be my boyfriend?</p>
+                                <p><strong>Stephen:</strong> Sure!</p>
+                            </div>
+                            <p style="text-align: center; font-size: 1.8rem; margin: 30px 0;"><strong>And it was official<span class="exclamation">!!!!!!!!!!</span></strong></p>
+                        </div>
+                        <div class="page-number left">18</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h3>The Meeting of the Sunnys</h3>
+                            <p>Stephen meets Sunny the Kid<span class="exclamation">!!!!</span></p>
+                            <p>Sunny the Kid meets Sunny the Pup<span class="exclamation">!!!!</span></p>
+                            <p style="text-align: center; margin: 30px 0; font-style: italic;">Much craziness……</p>
+                        </div>
+                        <div class="page-number right">19</div>
+                    </div>
+                `
+            },
+            // PAGE 11 - Scottish Proposal
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/66559dc3-f226-4bdb-87cb-0a1cb6bd601e" class="page-image full-page" alt="First meeting at the motorcycle bar">
+                        <div class="page-number left">20</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h3>The Scottish Scheme</h3>
+                            <p><strong>April 4th, 2022</strong>……</p>
+                            <p>Stephen "Love Schemes" (to be officially trademarked later) Lisa by taking her and Sunny to Scotland to "see your castle" but secretly it's to ask her to <strong>MARRY HIM<span class="exclamation">!!!!</span></strong></p>
+                        </div>
+                        <div class="page-number right">21</div>
+                    </div>
+                `
+            },
+            // PAGE 12 - Three Weddings
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/a0ca4899-e9fe-4f20-8a83-4e22f6081da3" class="page-image full-page" alt="Stephen and Lisa born 1985 and 1988">
+                        <div class="page-number left">22</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>Then a tale of three weddings<span class="exclamation">!!!!</span></h2>
+                            <div class="decorative-line"></div>
+                            <p><strong>April 26th, 2023</strong></p>
+                            <p>The wedding on the lake with the power washer<span class="exclamation">!!!</span></p>
+                            <div class="decorative-line"></div>
+                            <p><strong>May 13th, 2023</strong></p>
+                            <p>The wedding on the lake with the crazy dress and oh yeah friends and stuff….</p>
+                        </div>
+                        <div class="page-number right">23</div>
+                    </div>
+                `
+            },
+            // PAGE 13 - Wedding Timeline and Honeymoon
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/396fb576-d675-4846-9448-cbb6e3e5776c" class="page-image full-page" alt="Scottish Castle Proposal">
+                        <div class="page-number left">24</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>The Honeymoon<span class="exclamation">!!!!!!!!!!</span></h2>
+                            <p style="text-align: center; font-size: 2rem; margin: 30px 0;"><strong>SPAIN<span class="exclamation">!!!!</span></strong></p>
+                            <p style="text-align: center; font-size: 1.8rem; margin: 20px 0;"><strong>SAN SEBASTIAN<span class="exclamation">!!!!!!</span></strong></p>
+                            <div class="decorative-line"></div>
+                            <p style="text-align: center;">Land in America….wait two days….move to another state<span class="exclamation">!!!!</span></p>
+                        </div>
+                        <div class="page-number right">25</div>
+                    </div>
+                `
+            },
+            // PAGE 14 - Sebastian and Faith Journey
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>More Contact<span class="exclamation">!!!!!</span></h2>
+                            <p>Then <strong>Contact<span class="exclamation">!!!!!!</span></strong> September 28th, 2023… wait didn't we do this already….</p>
+                            <p style="text-align: center; margin: 40px 0; font-size: 1.5rem;">Oh wait, <strong>Sebastian was conceived<span class="exclamation">!!!</span></strong></p>
+                            <div class="decorative-line"></div>
+                            <h3 style="text-align: center;">Baby Cowboy 🤠</h3>
+                            <p style="text-align: center;"><strong>July 4th, 2024</strong></p>
+                            <p style="text-align: center;">Baby Cowboy Sebastian was born….</p>
+                        </div>
+                        <div class="page-number left">26</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <p><strong>August 11, 2024</strong></p>
+                            <p>The wedding in the church before God!</p>
+                            <div class="decorative-line"></div>
+                            <h2>The Faith Journey</h2>
+                            <p><strong>Stephen and Sunny officially become Catholic on April 19th, 2025<span class="exclamation">!!!</span></strong></p>
+                        </div>
+                        <div class="page-number right">27</div>
+                    </div>
+                `
+            },
+            // PAGE 15 - Penelope
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>Wait….a girl…they are having a girl<span class="exclamation">!!!!</span></h2>
+                            <div class="decorative-line"></div>
+                            <p>And then….Lisa went to hospital…..</p>
+                            <p style="margin: 30px 0;">A baby girl<span class="exclamation">!!!!</span></p>
+                            <p style="font-size: 1.6rem;"><strong>Penelope 12/21/2025</strong></p>
+                        </div>
+                        <div class="page-number left">28</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/736d80fc-6f3e-4c2e-b2bf-6dcc23c65e26" class="page-image full-page" alt="OkCupid Message">
+                        <div class="page-number right">29</div>
+                    </div>
+                `
+            },
+            // PAGE 16 - Universe Timeline Text
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>The Universe, The Timeline, and The Love Story</h2>
+                            <div class="decorative-line"></div>
+                            <p>From the Big Bang to baby giggles.</p>
+                            <p>From cosmic stardust to OkCupid messages.</p>
+                            <p>From 13.8 billion years of preparation to one perfect family.</p>
+                            <p style="margin: 40px 0; font-size: 1.5rem;"><strong>The universe knew what it was doing all along.</strong></p>
+                        </div>
+                        <div class="page-number left">30</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text">
+                            <h2>The End (Or Is It?)</h2>
+                            <div class="decorative-line"></div>
+                            <p>A lot's happened in history…God created the universe with a bang…smiting…Jesus…WW2….Stephen and Lisa….</p>
+                            <p style="margin: 30px 0; text-align: center; font-size: 1.4rem;">Like I said Good things and Bad… but <strong>I think it's been working out<span class="exclamation">!!!</span></strong></p>
+                        </div>
+                        <div class="page-number right">31</div>
+                    </div>
+                `
+            },
+            // PAGE 17 - Family Photo and Family List
+            {
+                front: `
+                    <div class="page-content">
+                        <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/82502a4c-be40-4750-aeda-7e6cb040267f" class="page-image full-page" alt="The Complete Family">
+                        <div class="page-number left">32</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="page-text center">
+                            <h2>The Family</h2>
+                            <div class="decorative-line"></div>
+                            <p>🌟 Stephen</p>
+                            <p>💖 Lisa</p>
+                            <p>👦 Sunny the Kid</p>
+                            <p>🐕 Sunny the Pup and Buddy the Pup</p>
+                            <p>🤠 Baby Cowboy Sebastian (July 4, 2024)</p>
+                            <p>👶 Baby Penelope (December 21, 2025)</p>
+                        </div>
+                        <div class="page-number right">33</div>
+                    </div>
+                `
+            },
+            // PAGE 18 - The End
+            {
+                front: `
+                    <div class="page-content">
+                        <div class="cover-page">
+                            <h1>THE END</h1>
+                            <div class="decorative-line"></div>
+                            <p style="font-style: italic; color: #654321; font-size: 1.3rem;">
+                                (Until the next adventure…)
+                            </p>
+                            <p style="margin-top: 40px; font-size: 1.8rem;">
+                                ✨ 💕 🌟
+                            </p>
+                        </div>
+                        <div class="page-number left">34</div>
+                    </div>
+                `,
+                back: `
+                    <div class="page-content">
+                        <div class="cover-page">
+                            <h1>✨ With Love ✨</h1>
+                            <div class="decorative-line"></div>
+                            <p style="font-size: 1.2rem;">
+                                From the beginning of time to this very moment,<br>
+                                every star that exploded, every atom that formed,<br>
+                                every choice ever made...<br><br>
+                                It all led to you.
+                            </p>
+                        </div>
+                        <div class="page-number right">35</div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentPage = -1;
+        const book = document.getElementById('book');
+        let hasOpenedBook = false;
+
+        function openBook() {
+            if (hasOpenedBook) return;
+            hasOpenedBook = true;
+            
+            book.classList.add('opening-animation');
+            
+            setTimeout(() => {
+                document.getElementById('leftCover').style.display = 'none';
+                document.getElementById('rightCover').style.display = 'none';
+                createPages();
+                updatePageIndicator();
+                document.getElementById('prevBtn').disabled = false;
+            }, 1500);
+        }
+
+        function createPages() {
+            const existingPages = book.querySelectorAll('.page-wrapper');
+            existingPages.forEach(p => p.remove());
+
+            pages.forEach((page, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'page-wrapper';
+                wrapper.style.zIndex = pages.length - index;
+                
+                const frontPage = document.createElement('div');
+                frontPage.className = 'page page-front';
+                frontPage.innerHTML = page.front;
+                
+                const backPage = document.createElement('div');
+                backPage.className = 'page page-back';
+                backPage.innerHTML = page.back;
+                
+                wrapper.appendChild(frontPage);
+                wrapper.appendChild(backPage);
+                
+                wrapper.addEventListener('click', () => {
+                    if (index === currentPage + 1) {
+                        nextPage();
+                    }
+                });
+                
+                book.appendChild(wrapper);
+            });
+        }
+
+        function nextPage() {
+            if (currentPage < pages.length - 1) {
+                currentPage++;
+                const pageWrappers = book.querySelectorAll('.page-wrapper');
+                pageWrappers[currentPage].classList.add('flipped');
+                updateControls();
+                updatePageIndicator();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage >= 0) {
+                const pageWrappers = book.querySelectorAll('.page-wrapper');
+                pageWrappers[currentPage].classList.remove('flipped');
+                currentPage--;
+                updateControls();
+                updatePageIndicator();
+            }
+        }
+
+        function updateControls() {
+            document.getElementById('prevBtn').disabled = currentPage < 0;
+            document.getElementById('nextBtn').disabled = currentPage >= pages.length - 1;
+        }
+
+        function updatePageIndicator() {
+            const indicator = document.getElementById('pageIndicator');
+            if (currentPage < 0) {
+                indicator.textContent = 'Cover';
+            } else if (currentPage === pages.length - 1) {
+                indicator.textContent = 'The End';
+            } else {
+                const leftPage = (currentPage * 2) + 2;
+                const rightPage = leftPage + 1;
+                indicator.textContent = `Pages ${leftPage}-${rightPage}`;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+        });
+
+        setTimeout(openBook, 500);
+    </script>
+</body>
+</html>
